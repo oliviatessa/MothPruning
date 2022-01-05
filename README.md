@@ -12,7 +12,7 @@ For more information, please see our [paper](https://link-url-here.org) [[1]](#1
 The deep, fully-connected neural network was constructed with ten input variables and seven output variables (see Fig. \ref{fig:mothBody}). The initial and final state space conditions are the inputs to the network: \dot{x}<sub>i</sub>, \dot{y}<sub>i</sub>, \phi<sub>i</sub>, \theta<sub>i</sub>, \dot{\phi}<sub>i</sub>, \dot{\theta}<sub>i</sub>, x<sub>f</sub>, y<sub>f</sub>, \phi<sub>f</sub>, \theta<sub>f</sub>. The network predicts the control variables and the final derivatives of the state space in its output layer ($F_x,\, F_y,\, \tau,\, \dot{x}_f,\, \dot{y}_f,\, \dot{\theta}_f,\, \dot{\phi}_f$).
 
 
-<img src="https://render.githubusercontent.com/render/math?math=e^{i \pi} = -1">
+<img src="https://render.githubusercontent.com/render/math?math=\dot{x}_i">
 
 ## Installation
 
