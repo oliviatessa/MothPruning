@@ -14,22 +14,25 @@ The deep, fully-connected neural network was constructed with ten input variable
 <img src="https://render.githubusercontent.com/render/math?math=x"><sub>*f*</sub>,
 <img src="https://render.githubusercontent.com/render/math?math=y"><sub>*f*</sub>, <img src="https://render.githubusercontent.com/render/math?math=\phi"><sub>*f*</sub>, and <img src="https://render.githubusercontent.com/render/math?math=\theta"><sub>*f*</sub>. The network predicts the control variables and the final derivatives of the state space in its output layer: <img src="https://render.githubusercontent.com/render/math?math=F"><sub>*x*</sub>, <img src="https://render.githubusercontent.com/render/math?math=F"><sub>*y*</sub>, <img src="https://render.githubusercontent.com/render/math?math=\tau">, <img src="https://render.githubusercontent.com/render/math?math=\dot{x}"><sub>*f*</sub>, <img src="https://render.githubusercontent.com/render/math?math=\dot{y}"><sub>*f*</sub>, <img src="https://render.githubusercontent.com/render/math?math=\dot{\phi}"><sub>*f*</sub>, and <img src="https://render.githubusercontent.com/render/math?math=\dot{\theta}"><sub>*f*</sub>.
 
-After the fully-connected network is trained to a minimum error, we used the method of neural network pruning to promote sparsity between the network layers. In this work, a target sparsity (percentage of pruned network weights) is specified and those weights are forced to zero. The network is then retrained until a minimum error is reached. This process is repeated until most of the weights have been pruned from the network.
-
-To ensure weights remain pruned during retraining, we implemented the pruning functionality of a TensorFlow built toolkit called the Model Optimization Toolkit \cite{tensorflow}. The toolkit contains functions for pruning deep neural networks. In the Model Optimization Toolkit, pruning is achieved through the use of binary masking layers that are multiplied element-wise to each weight matrix in the network. A four-layer neural network can be mathematically described the following way. 
-
-To be able to train and analyze many neural networks, the training and pruning protocols were parallelized in the Jax framework \cite{jax2018github}. Rather than requiring data to be in the form of tensors (such as in TensorFlow), Jax is capable of performing transformations on NumPy \cite{harris2020array} structures. Jax however does not come with a toolkit for pruning, therefore pruning by way of the binary masking matrices was coded into the training loop.
+After the fully-connected network is trained to a minimum error, we used the method of neural network pruning to promote sparsity between the network layers. In this work, a target sparsity (percentage of pruned network weights) is specified and the smallest magnitude weights are forced to zero. The network is then retrained until a minimum error is reached. This process is repeated until most of the weights have been pruned from the network.
 
 The training and pruning protocols were developed using Keras with the TensorFlow backend. To scale up training for the statistical analysis of many networks, the training and pruning protocols were parallelized using the Jax framework.
 
-![equation](http://www.sciweavers.org/tex2img.php?eq=1%2Bsin%28mc%5E2%29&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=)
+To ensure weights remain pruned during retraining, we implemented the pruning functionality of a TensorFlow built toolkit called the [Model Optimization Toolkit](https://www.tensorflow.org/model_optimization/guide/pruning/comprehensive_guide.md). The toolkit contains functions for pruning deep neural networks. In the Model Optimization Toolkit, pruning is achieved through the use of binary masking layers that are multiplied element-wise to each weight matrix in the network.
 
+To be able to train and analyze many neural networks, the training and pruning protocols were parallelized in the Jax framework. Jax however does not come with a toolkit for pruning, therefore pruning by way of the binary masking matrices was coded into the training loop.
 
 ## Installation
 
 ## How to use
 
+The following guide walks through the process of training and pruning many networks in parallel using the Jax framework. However, the TensorFlow code is also provided for experimentation and visualization. 
+
 ### Step 1: Train networks 
+
+```
+python3 step1_train.py
+```
 
 ### Step 2: Evaluate at prunes
 
