@@ -9,10 +9,20 @@ For more information, please see our [paper](https://link-url-here.org) [[1]](#1
 
 ## Project Description
 
-The deep, fully-connected neural network was constructed with ten input variables and seven output variables (see Fig. \ref{fig:mothBody}). The initial and final state space conditions are the inputs to the network: <img src="https://render.githubusercontent.com/render/math?math=\dot{x}"><sub>*i*</sub>, <img src="https://render.githubusercontent.com/render/math?math=\dot{y}"><sub>*i*</sub>, 
+The deep, fully-connected neural network was constructed with ten input variables and seven output variables. The initial and final state space conditions are the inputs to the network: <img src="https://render.githubusercontent.com/render/math?math=\dot{x}"><sub>*i*</sub>, <img src="https://render.githubusercontent.com/render/math?math=\dot{y}"><sub>*i*</sub>, 
 <img src="https://render.githubusercontent.com/render/math?math=\phi"><sub>*i*</sub>, <img src="https://render.githubusercontent.com/render/math?math=\theta"><sub>*i*</sub>, <img src="https://render.githubusercontent.com/render/math?math=\dot{\phi}"><sub>*i*</sub>, <img src="https://render.githubusercontent.com/render/math?math=\dot{\theta}"><sub>*i*</sub>, 
 <img src="https://render.githubusercontent.com/render/math?math=x"><sub>*f*</sub>,
 <img src="https://render.githubusercontent.com/render/math?math=y"><sub>*f*</sub>, <img src="https://render.githubusercontent.com/render/math?math=\phi"><sub>*f*</sub>, and <img src="https://render.githubusercontent.com/render/math?math=\theta"><sub>*f*</sub>. The network predicts the control variables and the final derivatives of the state space in its output layer: <img src="https://render.githubusercontent.com/render/math?math=F"><sub>*x*</sub>, <img src="https://render.githubusercontent.com/render/math?math=F"><sub>*y*</sub>, <img src="https://render.githubusercontent.com/render/math?math=\tau">, <img src="https://render.githubusercontent.com/render/math?math=\dot{x}"><sub>*f*</sub>, <img src="https://render.githubusercontent.com/render/math?math=\dot{y}"><sub>*f*</sub>, <img src="https://render.githubusercontent.com/render/math?math=\dot{\phi}"><sub>*f*</sub>, and <img src="https://render.githubusercontent.com/render/math?math=\dot{\theta}"><sub>*f*</sub>.
+
+After the fully-connected network is trained to a minimum error, we used the method of neural network pruning to promote sparsity between the network layers. In this work, a target sparsity (percentage of pruned network weights) is specified and those weights are forced to zero. The network is then retrained until a minimum error is reached. This process is repeated until most of the weights have been pruned from the network.
+
+To ensure weights remain pruned during retraining, we implemented the pruning functionality of a TensorFlow built toolkit called the Model Optimization Toolkit \cite{tensorflow}. The toolkit contains functions for pruning deep neural networks. In the Model Optimization Toolkit, pruning is achieved through the use of binary masking layers that are multiplied element-wise to each weight matrix in the network. A four-layer neural network can be mathematically described the following way. 
+
+To be able to train and analyze many neural networks, the training and pruning protocols were parallelized in the Jax framework \cite{jax2018github}. Rather than requiring data to be in the form of tensors (such as in TensorFlow), Jax is capable of performing transformations on NumPy \cite{harris2020array} structures. Jax however does not come with a toolkit for pruning, therefore pruning by way of the binary masking matrices was coded into the training loop.
+
+The training and pruning protocols were developed using Keras with the TensorFlow backend. To scale up training for the statistical analysis of many networks, the training and pruning protocols were parallelized using the Jax framework.
+
+![equation](https://latex.codecogs.com/svg.image?%5Chat%7By%7D%20=%20%5Cmathbf%7BM_4%7D%20%5Ccirc%20%5Csigma_4(%5Cmathbf%7BA_4%7D...(%5Cmathbf%7BM_1%7D%20%5Ccirc%20(%5Csigma_1(%5Cmathbf%7BA_1%7Dx))))
 
 ## Installation
 
