@@ -30,9 +30,12 @@ The following guide walks through the process of training and pruning many netwo
 
 ### Step 1: Train networks 
 
+First we train and prune the desired number of networks in parallel using the Jax framework. Choose the number of networks you wish to train/prune in parallel by adjusting the `numParallel` parameter. You can also define the number of layers, units, and other hyperparameters. Use the command 
+
 ```
 python3 step1_train.py
 ```
+to train and prune the networks in parallel. 
 
 ### Step 2: Evaluate at prunes
 
