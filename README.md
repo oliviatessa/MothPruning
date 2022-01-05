@@ -22,7 +22,8 @@ To be able to train and analyze many neural networks, the training and pruning p
 
 The training and pruning protocols were developed using Keras with the TensorFlow backend. To scale up training for the statistical analysis of many networks, the training and pruning protocols were parallelized using the Jax framework.
 
-![equation](https://latex.codecogs.com/png.image?\dpi{110}&space;\hat{y}&space;=&space;\mathbf{M_4}&space;\circ&space;\sigma_4(\mathbf{A_4}...(\mathbf{M_1}&space;\circ&space;(\sigma_1(\mathbf{A_1}x))))
+![equation](http://www.sciweavers.org/tex2img.php?eq=1%2Bsin%28mc%5E2%29&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=)
+
 
 ## Installation
 
