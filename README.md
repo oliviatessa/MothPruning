@@ -85,7 +85,7 @@ This code prepares the networks for sparse network identification (explained in 
 
 This codes finds the optimally sparse networks. For each network, the most pruned version whose loss is below a specified threshold (here 0.001) is kept. For example, the image below is a single network that has gone through the sequential pruning process and the red line specifies the defined threshold. For this example, the optimally sparse network is the one pruned by 94% (i.e. 6% of the original weights remain). 
 
-![This is an image!](mothMachineLearning_dataAndFigs/Figs/single_prune.png)
+![This is an image!](mothMachineLearning_dataAndFigs/Figs/single_pruneV2.png)
 
 The sparse networks are collected and saved to a file called `sparseNetworks.pkl`. Open and run `step4_findSparse.ipynb`, making sure to change `modeltimestamp` and the file names to the correct ones for your run.
 
