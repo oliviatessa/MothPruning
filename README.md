@@ -85,7 +85,7 @@ This code prepares the networks for sparse network identification (explained in 
 
 This codes finds the optimally sparse networks. For each network, the most pruned version whose loss is below a specified threshold (here 0.001) is kept. The sparse networks are collected and saved to a file called `sparseNetworks.pkl`. Open and run `step4_findSparse.ipynb`, making sure to change `modeltimestamp` and the file names to the correct ones for your run.
 
-*Note that if a network does not have a single prune that is below the loss threshold, it will be skipped and not included in the list of `sparseNetworks`. For example, if you trained and pruned 10 networks and 3 did not have a prune below a loss of 0.001, the list `sparseNetworks` will be length 7.*
+*Note that if a network does not have a single prune that is below the loss threshold, it will be skipped and not included in the list of* `sparseNetworks`. *For example, if you trained and pruned 10 networks and 3 did not have a prune below a loss of 0.001, the list* `sparseNetworks` *will be length 7.*
 
 ## References
 <a id="1">[1]</a> 
