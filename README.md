@@ -42,7 +42,7 @@ conda deactivate
 
 To install Jax and Flax please follow the instructions on the [Jax Github](https://github.com/google/jax#installation). 
 
-### Data
+## Data
 
 To use the TensorFlow version of this code, you need to gerenate simulations of moth hovering for the data. The Jax version (multi-network train and prune) has data provided in this repository.
 
