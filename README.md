@@ -26,6 +26,22 @@ To be able to train and analyze many neural networks, the training and pruning p
 
 ## Installation
 
+Create new conda environment with tools for generating data and training network (Note that this environment requires a GPU and the correct NVIDIA drivers).
+
+```
+conda env create -f environment_ODE_DL.yml
+```
+
+Create kernelspec (so you can see this kernel in JupyterLab).
+
+```
+conda activate [environment name]
+python -m ipykernel install --user --name [environment name]
+conda deactivate
+```
+
+To install Jax and Flax please follow the instructions on the [Jax Github](https://github.com/google/jax#installation). 
+
 ## How to use
 
 The following guide walks through the process of training and pruning many networks in parallel using the Jax framework. However, the TensorFlow code is also provided for experimentation and visualization. 
