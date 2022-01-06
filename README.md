@@ -26,7 +26,7 @@ To be able to train and analyze many neural networks, the training and pruning p
 
 ## Installation
 
-Create new conda environment with tools for generating data and training network (Note that this environment requires a GPU and the correct NVIDIA drivers).
+Create new conda environment with tools for generating data and training network *(Note that this environment requires a GPU and the correct NVIDIA drivers).*
 
 ```
 conda env create -f environment_ODE_DL.yml
@@ -42,11 +42,25 @@ conda deactivate
 
 To install Jax and Flax please follow the instructions on the [Jax Github](https://github.com/google/jax#installation). 
 
+### Data
+
+To use the TensorFlow version of this code, you need to gerenate simulations of moth hovering for the data. The Jax version (multi-network train and prune) has data provided in this repository.
+
+```
+cd MothMachineLearning/Underactuated/GenerateData
+
+```
+and use `010_OneTorqueParallelSims.ipynb ` to generate the simulations. 
+
 ## How to use
 
 The following guide walks through the process of training and pruning many networks in parallel using the Jax framework. However, the TensorFlow code is also provided for experimentation and visualization. 
 
 ### Step 1: Train networks 
+
+```
+cd MothMachineLearning/Underactuated/TrainNetwork/multiNetPrune/
+```
 
 First we train and prune the desired number of networks in parallel using the Jax framework. Choose the number of networks you wish to train/prune in parallel by adjusting the `numParallel` parameter. You can also define the number of layers, units, and other hyperparameters. Use the command 
 
@@ -57,9 +71,21 @@ to train and prune the networks in parallel.
 
 ### Step 2: Evaluate at prunes
 
+Next, the networks need to be evaulated at each prune. Use the command
+```
+python3 step2_pruneEval.py
+```
+to evaluate the networks at each prune. 
+
 ### Step 3: Pre-process networks 
 
+This code prepares the networks for sparse network identification (explained in the next step). It essentially just reorganizes the data. Open and run `step3_preprocess.ipynb` to preprocess, making sure to change `modeltimestamp` and the file names to the correct ones for your run.
+
 ### Step 4: Find sparse networks 
+
+This codes finds the optimally sparse networks. For each network, the most pruned version whose loss is below a specified threshold (here 0.001) is kept. The sparse networks are collected and saved to a file called `sparseNetworks.pkl`. Open and run `step4_findSparse.ipynb`, making sure to change `modeltimestamp` and the file names to the correct ones for your run.
+
+*Note that if a network does not have a single prune that is below the loss threshold, it will be skipped and not included in the list of `sparseNetworks`. For example, if you trained and pruned 10 networks and 3 did not have a prune below a loss of 0.001, the list `sparseNetworks` will be length 7.*
 
 ## References
 <a id="1">[1]</a> 
