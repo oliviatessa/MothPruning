@@ -21,7 +21,7 @@ from datetime import datetime
 start_time = time.time()
 
 
-dataOutput = '/home/olivia/mothPruning/mothMachineLearning_dataAndFigs/DataOutput/Experiments/'
+dataOutput = '/home/olivia/mothPruning/mothMachineLearning_dataAndFigs/DataOutput/Experiments/pruned_bias/'
 
 #Name of experiment
 modeltimestamp = datetime.now().strftime("%Y_%m_%d__%I_%M_%S")
@@ -31,11 +31,11 @@ if not os.path.exists(modelSubdir):
 
 cutPercent = [0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.90]
 cutPercent = np.append(cutPercent, np.arange(0.91, 1.0, 0.01)) #the last values in cutPercent is never actually trained on
-numUnits = [10, 800, 800, 800, 32, 7] #added input and output layer
+numUnits = [10, 400, 400, 400, 16, 7] #added input and output layer
 
 
 #Number of networks you want to train in parallel
-numParallel = 10 
+numParallel = 400
 
 #np.random.seed(4206969)
 
@@ -54,31 +54,27 @@ with a leading numParallel dimension that denotes networks trained in parallel
 weights = []
 biases = []
 masks = []
+bmasks = []
 #I am initializing the weights and masks here
 for i in range(len(numUnits)-1):
     weights.append(jnp.array(np.random.normal(0,1,(numParallel,numUnits[i],numUnits[i+1])))/5.)
     masks.append(jnp.ones((numParallel,numUnits[i],numUnits[i+1])))
     biases.append(jnp.zeros((numParallel,numUnits[i+1])))
-    
-'''
-
-# EVALUATION MODE
-#Initialize the weights
--
-weightsFile = 'weights_minmax_Adam5_smallNet.pkl'
-weights = pickle.load(open(weightsFile, 'rb'))
-
-biasesFile = 'biases_minmax_Adam5_smallNet.pkl'
-biases = pickle.load(open(biasesFile, 'rb'))
-
-masksFile = 'masks_minmax_Adam5_smallNet.pkl'
-masks = pickle.load(open(masksFile, 'rb'))
-'''
+    bmasks.append(jnp.ones((numParallel,numUnits[i+1])))
 
 
-#Load the data
-X = np.load('X.npy')
-Y = np.load('Y.npy')
+
+#Load the data and scalers
+X = np.load('scalarValue_1/X.npy')
+Y = np.load('scalarValue_1/Y.npy')
+Xval = np.load('scalarValue_1/Xval.npy')
+Yval = np.load('scalarValue_1/Yval.npy')
+
+xMin = np.load('scalarValue_1/xMin.npy')
+xMax = np.load('scalarValue_1/xMax.npy')
+yMin = np.load('scalarValue_1/yMin.npy')
+yMax = np.load('scalarValue_1/yMax.npy')
+
 
 
 '''
@@ -93,8 +89,27 @@ Y = jnp.array((Y-np.min(Y,0))/(np.max(Y,0) - np.min(Y,0)) - 0.5)
 (never tested that)
 '''
 
-X = jnp.array((X-np.min(X,0))/(np.max(X,0) - np.min(X,0)) - 0.5)
-Y = jnp.array((Y-np.min(Y,0))/(np.max(Y,0) - np.min(Y,0)) - 0.5)
+#Need to use the same scaler to scale the validation data
+'''
+Moved scaling to datapreprocess.py
+'''
+'''
+xMin = np.min(X,0)
+xMax = np.max(X,0)
+yMin = np.min(Y,0)
+yMax = np.max(Y,0)
+
+pickle.dump(xMin, open(os.path.join(modelSubdir, 'xMin.pkl'), 'wb'))
+pickle.dump(xMax, open(os.path.join(modelSubdir, 'xMax.pkl'), 'wb'))
+pickle.dump(yMin, open(os.path.join(modelSubdir, 'yMin.pkl'), 'wb'))
+pickle.dump(yMax, open(os.path.join(modelSubdir, 'yMax.pkl'), 'wb'))
+'''
+
+X = jnp.array((X-xMin)/(xMax - xMin) - 0.5)
+Y = jnp.array((Y-yMin)/(yMax - yMin) - 0.5)
+
+Xval = jnp.array((Xval-xMin)/(xMax - xMin) - 0.5)
+Yval = jnp.array((Yval-yMin)/(yMax - yMin) - 0.5)
 
 
 '''
@@ -104,13 +119,13 @@ I am using the einsums to implement batched matrix multiplication.
 Apart from the the weights I am also feeding in a binary mask. All the weights
 are multiplied by the mask in order to set some of the weights to 0.
 '''
-def forward(weights, biases, masks, inpt):
-    x = jnp.einsum('ijk,lj->ilk',weights[0]*masks[0], inpt) + biases[0][:,None]
+def forward(weights, biases, masks, bmasks, inpt):
+    x = jnp.einsum('ijk,lj->ilk',weights[0]*masks[0], inpt) + biases[0][:,None]*bmasks[0][:,None]
     x = act(x)
-    for w,b,m in zip(weights[1:-1],biases[1:-1],masks[1:-1]):
-        x = jnp.einsum('ijk,ikl->ijl',x,w*m) + b[:,None]
+    for w,b,m,bm in zip(weights[1:-1],biases[1:-1],masks[1:-1],bmasks[1:-1]):
+        x = jnp.einsum('ijk,ikl->ijl',x,w*m) + b[:,None]*bm[:,None]
         x = act(x)
-    return jnp.einsum('ijk,ikl->ijl',x,weights[-1]*masks[-1]) + biases[-1][:,None]
+    return jnp.einsum('ijk,ikl->ijl',x,weights[-1]*masks[-1]) + biases[-1][:,None]*bmasks[-1][:,None]
 
 
 '''
@@ -118,13 +133,13 @@ This is just the loss function. The @jax.jit makes everything fast.
 don't forget jnp.mean in TRAINING MODE
 '''
 @jax.jit
-def lossf(weights, biases, masks, inpt, outpt):
-    xhat = forward(weights,biases,masks,inpt)
+def lossf(weights, biases, masks, bmasks, inpt, outpt):  
+    xhat = forward(weights,biases,masks,bmasks,inpt)  
     loss = jnp.mean((xhat-outpt)**2)
     return loss
 
-def lossf2(weights, biases, masks, inpt, outpt):
-    xhat = forward(weights,biases,masks,inpt)
+def lossf2(weights, biases, masks, bmasks, inpt, outpt): 
+    xhat = forward(weights,biases,masks,bmasks,inpt) 
     loss = jnp.mean((xhat-outpt)**2, axis = (1,2))
     return loss
 
@@ -136,23 +151,43 @@ that makes sure we don't run for an entire epoch if the loss doesnt improve.
 The data repeats itself very quickly anyways so no need for an entire epoch.
 '''
 batch = 128
-def epoch(optimizer, masks):
+def epoch(optimizer, masks, bmasks):
     
     losses = []
+    valLosses = []
     allNetsLosses = []
-    for i in range(len(X)//batch):
-        print(len(X)//batch)
+    allValLosses = []
+    for i in range(len(X)//batch): #
+        #print(len(X)//batch)
+        #Batched training data
         x_in = X[i*batch:(i+1)*batch]
         y_in = Y[i*batch:(i+1)*batch]
-        err, gr = jax.value_and_grad(lossf,argnums=(0,1))(*optimizer.target,masks,x_in,y_in)
-        allNetsLoss = lossf2(*optimizer.target, masks, x_in, y_in)
+        
+        #Batched validation data
+        xVal_in = Xval[i*batch:(i+1)*batch]
+        yVal_in = Yval[i*batch:(i+1)*batch]
+        
+        #Calculate gradient and validation loss
+        err, gr = jax.value_and_grad(lossf,argnums=(0,1))(*optimizer.target,masks,bmasks,x_in,y_in)
+        valLoss = lossf(*optimizer.target,masks,bmasks,xVal_in,yVal_in)
+        
+        '''
+        Should this happen after the gradient update??
+        '''
+        #Record losses
+        allNetsLoss = lossf2(*optimizer.target, masks, bmasks, x_in, y_in)
         allNetsLosses.append(allNetsLoss)
+        allValLoss = lossf2(*optimizer.target, masks, bmasks, xVal_in, yVal_in)
+        allValLosses.append(allValLoss)
+        
+        
         optimizer = optimizer.apply_gradient(gr)
         losses.append(err)
+        valLosses.append(valLoss)
         print(np.array(losses).shape)
         
 
-        
+        #Changed to validation loss
         if ((i+1)%100) == 0:
             #print(i*batch,len(X),err)
             '''
@@ -161,13 +196,15 @@ def epoch(optimizer, masks):
             
             If you need higher precision maybe change 1.01 to 1.005 but that should matter much.
             '''
-            if len(losses) > 1000:
+            
+            #Changed to 1%
+            if len(valLosses) > 1000:
                 #print(np.mean(losses[-500:]), np.mean(losses[-1000:-500]), np.mean(losses[-1000:-500])/np.mean(losses[-500:]))
-                if (np.mean(losses[-1000:-500])/np.mean(losses[-500:])) < 1.01:
+                if (np.mean(valLosses[-1000:-500])/np.mean(valLosses[-500:])) < 1.01:
 
                     break
                     
-    return optimizer, np.array(losses), np.array(allNetsLosses)
+    return optimizer, np.array(losses), np.array(allNetsLosses), np.array(valLosses), np.array(allValLosses)
 
 
 
@@ -182,68 +219,70 @@ adam = optim.Adam(5E-4)
 #TRAINING
 adam = adam.create((weights,biases))
 
-#EVALUATION
-#adam = adam.create((weights[0],biases[0]))
-
-
-
 
 all_errors = []
+all_valErrors = []
 all_weights = []
 all_masks = []
 all_biases = []
+all_bmasks = []
 seqPruneAllLosses = []
+seqPruneValLosses = []
 
 
 for c in cutPercent:
     
     for i in range(1):
         start = time.time()
-        adam, e, allNetsLosses = epoch(adam, masks)
+        adam, e, allNetsLosses, vale, allValLosses  = epoch(adam, masks, bmasks)
         print(e.shape)
         all_errors.append(e)
+        all_valErrors.append(vale)
         seqPruneAllLosses.append(allNetsLosses)
+        seqPruneValLosses.append(allValLosses)
         print("EPOCH DONE", np.mean(e), c, time.time()-start)
         
     all_masks.append([np.array(x) for x in masks])
     all_weights.append([np.array(x) for x in adam.target[0]])
     all_biases.append([np.array(x) for x in adam.target[1]])
+    all_bmasks.append([np.array(x) for x in bmasks])
+    
+    '''
+    Layer-wise magnitude based pruning
+    '''
     
     print("PRUNING")
     nmasks = []
-    for w,m in zip(adam.target[0],masks):
+    nbmasks = []
+    for w,m,b,bm in zip(adam.target[0],masks,adam.target[1],bmasks):
         N = int(c*np.prod(w[0].shape))
+        Nb = int(c*np.prod(b[0].shape))
         for j in range(numParallel):
             cutoff = jnp.sort(jnp.abs((w[j]*m[j]).reshape(-1)))[N]
+            cutoffb = jnp.sort(jnp.abs((b[j]*bm[j]).reshape(-1)))[Nb]
             m = m.at[j].set((jnp.abs(w[j])>cutoff)*1.0)
+            bm = bm.at[j].set((jnp.abs(b[j])>cutoff)*1.0)
         
         print('Pruned to', jnp.mean(m))
         nmasks.append(m)
+        nbmasks.append(bm)
     masks = nmasks
+    bmasks = nbmasks
     del nmasks
+    del nbmasks
+    
+    '''
+    Global pruning
+    '''
     
     
-pickle.dump(all_weights, open(os.path.join(modelSubdir, 'weights_minmax_Adam5_sample.pkl'), 'wb'))
-pickle.dump(all_biases, open(os.path.join(modelSubdir, 'biases_minmax_Adam5_sample.pkl'), 'wb'))
-pickle.dump(all_masks, open(os.path.join(modelSubdir,'masks_minmax_Adam5_sample.pkl'), 'wb'))
-pickle.dump(all_errors, open(os.path.join(modelSubdir,'errors_minmax_Adam5_sample.pkl'), 'wb'))
-pickle.dump(seqPruneAllLosses, open(os.path.join(modelSubdir,'lossesAllNets_Adam5_sample.pkl'), 'wb'))
+pickle.dump(all_weights, open(os.path.join(modelSubdir, 'weights_minmax_Adam5.pkl'), 'wb'))
+pickle.dump(all_biases, open(os.path.join(modelSubdir, 'biases_minmax_Adam5.pkl'), 'wb'))
+pickle.dump(all_masks, open(os.path.join(modelSubdir,'masks_minmax_Adam5.pkl'), 'wb'))
+pickle.dump(all_bmasks, open(os.path.join(modelSubdir,'bmasks_minmax_Adam5.pkl'), 'wb'))
+pickle.dump(all_errors, open(os.path.join(modelSubdir,'errors_minmax_Adam5.pkl'), 'wb'))
+pickle.dump(all_valErrors, open(os.path.join(modelSubdir,'valErrors_minmax_Adam5.pkl'), 'wb'))
+pickle.dump(seqPruneAllLosses, open(os.path.join(modelSubdir,'lossesAllNets_Adam5.pkl'), 'wb'))
+pickle.dump(seqPruneValLosses, open(os.path.join(modelSubdir,'lossesValNets_Adam5.pkl'), 'wb'))
 
-'''
-batch = 1024
-numBatches = len(X)//batch
-all_losses = []
-for i in range(len(cutPercent)):
-    sumLoss = np.zeros(numParallel)
-    for j in range(numBatches):
-        x_in = X[j*batch:(j+1)*batch]
-        y_in = Y[j*batch:(j+1)*batch]
-        loss = lossf2(weights[i], biases[i], masks[i], x_in, y_in)
-        sumLoss += np.array(loss)
-        print('on prune : ' + str(i) + ' and batch : ' + str(j) + ' of ' + str(numBatches))
-    finalLoss = sumLoss/numBatches
-    all_losses.append(finalLoss)
-    
-pickle.dump(all_losses, open('allPruneLosses_Adam5_largeNet.pkl', 'wb'))
-'''
 print("--- %s seconds ---" % (time.time() - start_time))
