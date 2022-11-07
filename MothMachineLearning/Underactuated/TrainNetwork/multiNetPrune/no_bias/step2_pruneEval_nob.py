@@ -18,20 +18,21 @@ import numpy as np
 
 start_time = time.time()
 
+no_bias=True
+
 '''
 INPUTS
 '''
-modeltimestamp = '2022_11_05__01_04_10'
+modeltimestamp = '2022_11_01__09_29_28'
 numParallel = 400 #you might be able to crank this up to 400 but 500 crashes after one epoch
 simulationPath = 'scalarValue_1/'
 
 
-dataOutput = '/home/olivia/mothPruning/mothMachineLearning_dataAndFigs/DataOutput/Experiments/pruned_bias/'
+dataOutput = '/home/olivia/mothPruning/mothMachineLearning_dataAndFigs/DataOutput/Experiments/no_bias/'
 modelSubdir = os.path.join(dataOutput, modeltimestamp)
 
 cutPercent = [0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.90]
 cutPercent = np.append(cutPercent, np.arange(0.91, 1.0, 0.01)) #the last values in cutPercent is never actually trained on
-
 
 
 #np.random.seed(4206969)
@@ -45,14 +46,12 @@ act = lambda x: jnp.tanh(x) #the activation function
 weightsFile = 'weights_minmax_Adam5.pkl'
 weights = pickle.load(open(os.path.join(modelSubdir, weightsFile), 'rb'))
 
-biasesFile = 'biases_minmax_Adam5.pkl'
-biases = pickle.load(open(os.path.join(modelSubdir, biasesFile), 'rb'))
+
+#biasesFile = 'biases_minmax_Adam5.pkl'
+#biases = pickle.load(open(os.path.join(modelSubdir, biasesFile), 'rb'))
 
 masksFile = 'masks_minmax_Adam5.pkl'
 masks = pickle.load(open(os.path.join(modelSubdir, masksFile), 'rb'))
-
-bmasksFile = 'bmasks_minmax_Adam5.pkl'
-bmasks = pickle.load(open(os.path.join(modelSubdir, bmasksFile), 'rb'))
 
 
 #Load the data
@@ -90,14 +89,14 @@ I am using the einsums to implement batched matrix multiplication.
 Apart from the the weights I am also feeding in a binary mask. All the weights
 are multiplied by the mask in order to set some of the weights to 0.
 '''
-
-def forward(weights, biases, masks, bmasks, inpt):
-    x = jnp.einsum('ijk,lj->ilk',weights[0]*masks[0], inpt) + biases[0][:,None]*bmasks[0][:,None]
+def forward(weights, masks, inpt): # biases,
+    x = jnp.einsum('ijk,lj->ilk',weights[0]*masks[0], inpt) #+ biases[0][:,None]
     x = act(x)
-    for w,b,m,bm in zip(weights[1:-1],biases[1:-1],masks[1:-1],bmasks[1:-1]):
-        x = jnp.einsum('ijk,ikl->ijl',x,w*m) + b[:,None]*bm[:,None]
+    
+    for w,m in zip(weights[1:-1],masks[1:-1]): #biases[1:-1], #b,
+        x = jnp.einsum('ijk,ikl->ijl',x,w*m) #+ b[:,None]
         x = act(x)
-    return jnp.einsum('ijk,ikl->ijl',x,weights[-1]*masks[-1]) + biases[-1][:,None]*bmasks[-1][:,None]
+    return jnp.einsum('ijk,ikl->ijl',x,weights[-1]*masks[-1]) #+ biases[-1][:,None]
 
 
 '''
@@ -105,13 +104,13 @@ This is just the loss function. The @jax.jit makes everything fast.
 don't forget jnp.mean in TRAINING MODE
 '''
 @jax.jit
-def lossf(weights, biases, masks, bmasks, inpt, outpt):  
-    xhat = forward(weights,biases,masks,bmasks,inpt)  
+def lossf(weights, masks, inpt, outpt): # biases,
+    xhat = forward(weights,masks,inpt) #biases,
     loss = jnp.mean((xhat-outpt)**2)
     return loss
 
-def lossf2(weights, biases, masks, bmasks, inpt, outpt): 
-    xhat = forward(weights,biases,masks,bmasks,inpt) 
+def lossf2(weights, masks, inpt, outpt): # biases,
+    xhat = forward(weights,masks,inpt) #biases,
     loss = jnp.mean((xhat-outpt)**2, axis = (1,2))
     return loss
 
@@ -131,8 +130,8 @@ def epoch(optimizer, masks):
         print(len(X)//batch)
         x_in = X[i*batch:(i+1)*batch]
         y_in = Y[i*batch:(i+1)*batch]
-        err, gr = jax.value_and_grad(lossf,argnums=(0,1))(*optimizer.target,masks,x_in,y_in)
-        allNetsLoss = lossf2(*optimizer.target, masks, x_in, y_in)
+        err, gr = jax.value_and_grad(lossf)(optimizer.target,masks,x_in,y_in) #* in front of optimizer #,argnums=(0,1)
+        allNetsLoss = lossf2(optimizer.target, masks, x_in, y_in) #* in front of optimizer
         allNetsLosses.append(allNetsLoss)
         optimizer = optimizer.apply_gradient(gr)
         losses.append(err)
@@ -150,7 +149,7 @@ def epoch(optimizer, masks):
             '''
             if len(losses) > 1000:
                 #print(np.mean(losses[-500:]), np.mean(losses[-1000:-500]), np.mean(losses[-1000:-500])/np.mean(losses[-500:]))
-                if (np.mean(losses[-1000:-500])/np.mean(losses[-500:])) < 1.01:
+                if (np.mean(losses[-1000:-500])/np.mean(losses[-500:])) < 1.015:
 
                     break
                     
@@ -168,7 +167,7 @@ from flax import optim
 adam = optim.Adam(5E-4)
 
 #EVALUATION
-adam = adam.create((weights[0],biases[0]))
+adam = adam.create((weights[0])) #,biases[0]
 
 batch = 1024
 numBatches = len(X)//batch
@@ -190,7 +189,7 @@ for i in range(len(cutPercent)):
         x_in = X[i*batch:(i+1)*batch]
         y_in = Y[i*batch:(i+1)*batch]
 
-        loss = lossf2(weights[i], biases[i], masks[i], bmasks[i], x_in, y_in) 
+        loss = lossf2(weights[i], masks[i], x_in, y_in) # biases[i],
         
         sumLoss += np.array(loss)
         
@@ -201,7 +200,7 @@ for i in range(len(cutPercent)):
         xVal_in = Xval[i*batch:(i+1)*batch]
         yVal_in = Yval[i*batch:(i+1)*batch]
         
-        vloss = lossf2(weights[i], biases[i], masks[i], bmasks[i], xVal_in, yVal_in)
+        vloss = lossf2(weights[i], masks[i], xVal_in, yVal_in) # biases[i],
         
         sumLossVal += np.array(vloss)
         
@@ -210,7 +209,7 @@ for i in range(len(cutPercent)):
         xtest_in = Xtest[i*batch:(i+1)*batch]
         ytest_in = Ytest[i*batch:(i+1)*batch]
         
-        tloss = lossf2(weights[i], biases[i], masks[i], bmasks[i], xtest_in, ytest_in)
+        tloss = lossf2(weights[i], masks[i], xtest_in, ytest_in) # biases[i],
         
         sumLossTest += np.array(tloss)
         
