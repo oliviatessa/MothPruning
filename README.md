@@ -93,8 +93,7 @@ The sparse networks are collected and saved to a file called `sparseNetworks.pkl
 
 ## References
 <a id="1">[1]</a> 
-Zahn, O., Bustamante, Jr J., Switzer, C., Daniel, T., and Kutz, J. N. (2022). 
-Pruning deep neural networks generates a sparse, bio-inspired nonlinear controller for insect flight. 
+Zahn, Olivia, Jorge Bustamante Jr, Callin Switzer, Thomas L. Daniel, and J. Nathan Kutz. “Pruning deep neural networks generates a sparse, bio-inspired nonlinear controller for insect flight.” PLoS Computational Biology 18.9 (2022): e1010512. https://doi.org/10.1371/journal.pcbi.1010512
 
 <a id="2">[2]</a> 
-Jorge Bustamante, Jr, Mahad Ahmed, Tanvi Deora, Brian Fabien, Thomas L Daniel, Abdominal Movements in Insect Flight Reshape the Role of Non-Aerodynamic Structures for Flight Maneuverability I: Model Predictive Control for Flower Tracking, Integrative Organismal Biology, Volume 4, Issue 1, 2022, obac039, https://doi.org/10.1093/iob/obac039
+Bustamant Jr, Jorge, Mahad Ahmed, Tanvi Deora, Brian Fabien, Thomas L Daniel. "Abdominal Movements in Insect Flight Reshape the Role of Non-Aerodynamic Structures for Flight Maneuverability I: Model Predictive Control for Flower Tracking." Integrative Organismal Biology, Volume 4, Issue 1, (2022): obac039. https://doi.org/10.1093/iob/obac039
