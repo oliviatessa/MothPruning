@@ -97,6 +97,4 @@ Zahn, O., Bustamante, Jr J., Switzer, C., Daniel, T., and Kutz, J. N. (2022).
 Pruning deep neural networks generates a sparse, bio-inspired nonlinear controller for insect flight. 
 
 <a id="2">[2]</a> 
-Bustamante, Jr J., Ahmed, M., Deora, T., Fabien, B., and Daniel, T. (2021). 
-Abdominal movements in insect flight reshape the role of non-aerodynamic structures for flight maneuverability. 
-J. Integrative and Comparative Biology. *In revision.*
+Jorge Bustamante, Jr, Mahad Ahmed, Tanvi Deora, Brian Fabien, Thomas L Daniel, Abdominal Movements in Insect Flight Reshape the Role of Non-Aerodynamic Structures for Flight Maneuverability I: Model Predictive Control for Flower Tracking, Integrative Organismal Biology, Volume 4, Issue 1, 2022, obac039, https://doi.org/10.1093/iob/obac039
