@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Apr 12 15:06:35 2021
-
-@author: henning
-"""
-
 import os
 import time
 import pickle
@@ -21,7 +13,7 @@ from datetime import datetime
 start_time = time.time()
 
 
-dataOutput = '/home/olivia/mothPruning/mothMachineLearning_dataAndFigs/DataOutput/Experiments/pruned_bias/'
+dataOutput = '/gscratch/dynamicsai/otthomas/MothPruning/mothMachineLearning_dataAndFigs/DataOutput/Experiments/pruned_bias/'
 
 #Name of experiment
 modeltimestamp = datetime.now().strftime("%Y_%m_%d__%I_%M_%S")
@@ -35,7 +27,7 @@ numUnits = [10, 400, 400, 400, 16, 7] #added input and output layer
 
 
 #Number of networks you want to train in parallel
-numParallel = 400
+numParallel = 10
 
 #np.random.seed(4206969)
 
@@ -270,10 +262,6 @@ for c in cutPercent:
     bmasks = nbmasks
     del nmasks
     del nbmasks
-    
-    '''
-    Global pruning
-    '''
     
     
 pickle.dump(all_weights, open(os.path.join(modelSubdir, 'weights_minmax_Adam5.pkl'), 'wb'))

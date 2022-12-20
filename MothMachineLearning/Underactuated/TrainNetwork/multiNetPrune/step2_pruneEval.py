@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Apr 12 15:06:35 2021
-
-@author: henning
-"""
-
 import os
 import time
 import pickle
@@ -21,12 +13,12 @@ start_time = time.time()
 '''
 INPUTS
 '''
-modeltimestamp = '2022_11_05__01_04_10'
+modeltimestamp = '2022_11_14__05_29_08'
 numParallel = 400 #you might be able to crank this up to 400 but 500 crashes after one epoch
 simulationPath = 'scalarValue_1/'
 
 
-dataOutput = '/home/olivia/mothPruning/mothMachineLearning_dataAndFigs/DataOutput/Experiments/pruned_bias/'
+dataOutput = '/gscratch/dynamicsai/otthomas/MothPruning/mothMachineLearning_dataAndFigs/DataOutput/Experiments/pruned_bias/'
 modelSubdir = os.path.join(dataOutput, modeltimestamp)
 
 cutPercent = [0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.90]

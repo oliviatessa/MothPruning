@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Apr 12 15:06:35 2021
-
-@author: henning
-"""
-
 import os
 import time
 import pickle
