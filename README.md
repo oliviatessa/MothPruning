@@ -5,7 +5,7 @@ Originally inspired by biological nervous systems, deep neural networks (DNNs) a
 
 In this work, we use the inertial dynamics model in [[2]](#2) to simulate examples of *M. sexta* hovering flight. These data are used to train a DNN to learn the controllers for hovering. Drawing inspiration from pruning in biological neural systems, we sparsify the network using neural network pruning. Here, we prune weights based simply on their magnitudes, removing those weights closest to zero. Insects must maneuver through high noise environments to accomplish controlled flight. It is often assumed that there is a trade-off between perfect flight control and robustness to noise and that the sensory data may be limited by the signal-to-noise ratio. Thus the network need not train for the most accurate model since in practice noise prevents high-fidelity models from exhibiting their underlying accuracy. Rather, we seek to find the sparsest model capable of performing the task given the noisy environment. We employed two methods for neural network pruning: either through manually setting weights to zero or by utilizing binary masking layers. Furthermore, the DNN is pruned sequentially, meaning groups of weights are removed slowly from the network, with retraining in-between successive prunes, until a target sparsity is reached. Monte Carlo simulations are also used to quantify the statistical distribution of network weights during pruning given random initialization of network weights.
 
-For more information, please see our [paper](https://link-url-here.org) [[1]](#1). 
+For more information, please see our [paper](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1010512) [[1]](#1). 
 
 ![This is an image!](mothMachineLearning_dataAndFigs/Figs/fig1_v2.png)
 
@@ -91,12 +91,13 @@ The sparse networks are collected and saved to a file called `sparseNetworks.pkl
 
 *Note that if a network does not have a single prune that is below the loss threshold, it will be skipped and not included in the list of* `sparseNetworks`. *For example, if you trained and pruned 10 networks and 3 did not have a prune below a loss of 0.001, the list* `sparseNetworks` *will be length 7.*
 
+## Acknowledgments
+
+We gratefully acknowledge the support of NVIDIA Corporation with the donation of the Titan Xp GPU used for this research and Henning Lange for his valuable help in developing the JAX code.
+
 ## References
 <a id="1">[1]</a> 
-Zahn, O., Bustamante, Jr J., Switzer, C., Daniel, T., and Kutz, J. N. (2022). 
-Pruning deep neural networks generates a sparse, bio-inspired nonlinear controller for insect flight. 
+Zahn, Olivia, Jorge Bustamante Jr, Callin Switzer, Thomas L. Daniel, and J. Nathan Kutz. “Pruning deep neural networks generates a sparse, bio-inspired nonlinear controller for insect flight.” PLoS Computational Biology 18.9 (2022): e1010512. https://doi.org/10.1371/journal.pcbi.1010512
 
 <a id="2">[2]</a> 
-Bustamante, Jr J., Ahmed, M., Deora, T., Fabien, B., and Daniel, T. (2021). 
-Abdominal movements in insect flight reshape the role of non-aerodynamic structures for flight maneuverability. 
-J. Integrative and Comparative Biology. *In revision.*
+Bustamant Jr, Jorge, Mahad Ahmed, Tanvi Deora, Brian Fabien, Thomas L Daniel. "Abdominal Movements in Insect Flight Reshape the Role of Non-Aerodynamic Structures for Flight Maneuverability I: Model Predictive Control for Flower Tracking." Integrative Organismal Biology, Volume 4, Issue 1, (2022): obac039. https://doi.org/10.1093/iob/obac039
