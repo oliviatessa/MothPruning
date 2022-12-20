@@ -91,7 +91,7 @@ The sparse networks are collected and saved to a file called `sparseNetworks.pkl
 
 *Note that if a network does not have a single prune that is below the loss threshold, it will be skipped and not included in the list of* `sparseNetworks`. *For example, if you trained and pruned 10 networks and 3 did not have a prune below a loss of 0.001, the list* `sparseNetworks` *will be length 7.*
 
-##Acknowledgments
+## Acknowledgments
 
 We gratefully acknowledge the support of NVIDIA Corporation with the donation of the Titan Xp GPU used for this research and Henning Lange for his valuable help in developing the JAX code.
 
