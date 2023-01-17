@@ -13,16 +13,16 @@ start_time = time.time()
 '''
 INPUTS
 '''
-modeltimestamp = '2022_11_14__05_29_08'
-numParallel = 400 #you might be able to crank this up to 400 but 500 crashes after one epoch
+modeltimestamp = '2022_11_05__01_04_10'
+numParallel = 1 #you might be able to crank this up to 400 but 500 crashes after one epoch
 simulationPath = 'scalarValue_1/'
 
 
-dataOutput = '/gscratch/dynamicsai/otthomas/MothPruning/mothMachineLearning_dataAndFigs/DataOutput/Experiments/pruned_bias/'
-modelSubdir = os.path.join(dataOutput, modeltimestamp)
+dataOutput = '/gscratch/dynamicsai/otthomas/MothPruning/mothMachineLearning_dataAndFigs/DataOutput/Experiments/pruned_bias/pruned_bias/'
+modelSubdir = os.path.join(dataOutput, modeltimestamp, 'postprune')
 
-cutPercent = [0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.90]
-cutPercent = np.append(cutPercent, np.arange(0.91, 1.0, 0.01)) #the last values in cutPercent is never actually trained on
+cutPercent = [0.91]
+#cutPercent = np.append(cutPercent, np.arange(0.91, 1.0, 0.01)) #the last values in cutPercent is never actually trained on
 
 
 
